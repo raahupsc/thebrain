@@ -61,7 +61,7 @@ reg("dashboard",()=>{
  [["Biology","The physical brain: neurons, senses, sleep and fear.",5,45],["Psychology","The thinking brain: emotions, lying, learning and illusions.",59,96]].forEach(p=>{
   const ps=chs.filter(c=>c.part===p[0]);
   html+='<div class="card"><h3 class="h3">'+p[0]+"</h3><p class=\"hint\">"+p[1]+'</p><p class="small gray">Book pages '+p[2]+"–"+p[3]+" · "+ps.length+" chapters</p>";
-  html+=ps.map(c=>'<div class="topic-row"><a class="t-main" href="#/chapter/'+c.id+'"><span class="t-idx">Ch '+c.num+"</span>"+esc(c.title)+"</a>"+pageRef(c.pages)+"</div>").join("")+"</div>";});
+  html+=ps.map(c=>'<div class="topic-row"><a class="t-main" href="#/chapter/'+c.id+'"><span class="t-idx">Ch '+c.num+"</span> "+esc(c.title)+"</a>"+pageRef(c.pages)+"</div>").join("")+"</div>";});
  html+="</div>";
  html+='<h2 class="h2">From the archives</h2><p class="sub">The drawings that built this science, a century before imaging. The Brain Explorer maps these structures on the brain itself.</p><div class="plate-strip">'+plate("purkinje")+plate("cerebellum")+plate("gray")+"</div>";
  html+='<p class="foot-note">Historical imagery: Santiago Ramón y Cajal, Henry Gray and others, via Wikimedia Commons (public domain and Creative Commons licences). Course content from <em>Understanding The Brain</em>, Future PLC.</p>';
