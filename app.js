@@ -22,10 +22,22 @@ const routes={};
 function go(h){location.hash=h;}
 function route(){const h=location.hash.replace(/^#\/?/,"")||"dashboard";const r=h.split("/")[0];const arg=h.slice(r.length+1);const fn=routes[r]||routes.dashboard;$$("#sidenav .nav-item").forEach(n=>n.classList.toggle("active",n.dataset.route===r));$("#main").innerHTML="";fn(arg);window.scrollTo(0,0);closeNav();}
 function reg(name,fn){routes[name]=fn;}
-function h(html){const m=$("#main");m.innerHTML=html;}
+function h(html){const m=$("#main");m.innerHTML=html;reveal();}
+let riseObserver=null;
+function reveal(){const m=$("#main");if(!("IntersectionObserver" in window))return;const kids=[...m.children];if(riseObserver)riseObserver.disconnect();riseObserver=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");riseObserver.unobserve(e.target);}}),{threshold:.08});kids.forEach((k,i)=>{k.classList.add("rise");k.style.transitionDelay=(i*70)+"ms";riseObserver.observe(k);});requestAnimationFrame(()=>requestAnimationFrame(()=>kids.slice(0,4).forEach(k=>{const r=k.getBoundingClientRect();if(r.top<window.innerHeight)k.classList.add("in");})));}
 function crumbs(items){return '<div class="breadcrumb">'+items.map(i=>i[1]?'<a href="#/'+i[1]+'" class="crumb">'+esc(i[0])+"</a>":'<span>'+esc(i[0])+"</span>").join(' <span class="crumb-sep">›</span> ')+"</div>";}
 /* ---------- shared UI ---------- */
 function pageRef(txt){return txt?'<span class="page-ref" title="Page in the source book">'+esc(txt)+"</span>":"";}
+/* ---------- plates: real archival imagery ---------- */
+const PLATES={
+ purkinje:{src:"assets/purkinje-cajal.png",alt:"Purkinje cells of the cerebellum, drawing by Santiago Ramón y Cajal",cap:"Purkinje cells of the cerebellum, drawn by Santiago Ramón y Cajal. Public domain, via Wikimedia Commons."},
+ cerebellum:{src:"assets/cajal-cerebellum.jpg",alt:"Cajal's drawing of cerebellar cortex",cap:"Cerebellar cortex, drawn by Santiago Ramón y Cajal. Public domain, via Wikimedia Commons."},
+ gray:{src:"assets/gray728-brain.png",alt:"Lateral surface of the human cerebral hemisphere, from Gray's Anatomy",cap:"Lateral surface of the cerebral hemisphere, from Gray's Anatomy (1918). Public domain, via Wikimedia Commons."},
+ gage:{src:"assets/gage-daguerreotype.jpg",alt:"Daguerreotype portrait of Phineas Gage",cap:"Phineas Gage, whose injury reshaped what medicine knew about the frontal lobes. CC BY-SA 3.0, via Wikimedia Commons."},
+ brodmann:{src:"assets/brodmann-frontal.png",alt:"Brodmann areas mapped on the lateral frontal lobe",cap:"Brodmann areas of the lateral frontal lobe. CC BY 4.0, via Wikimedia Commons."},
+ neuron:{src:"assets/neuron-diagram.png",alt:"Labelled diagram of a neuron",cap:"The structure of a neuron. Public domain, via Wikimedia Commons."}
+};
+function plate(k,cls){const p=PLATES[k];if(!p)return"";return '<figure class="plate '+(cls||"")+'"><img src="'+p.src+'" alt="'+p.alt+'" loading="lazy"><figcaption>'+p.cap+'</figcaption></figure>';}
 function quizCard(q,i,total,onAnswer,answered){let html='<div class="q-card"><div class="q-idx">Question '+(i+1)+" of "+total+'</div><div class="q-text">'+esc(q.q)+"</div>";
  if(answered===null){html+='<div class="opts">'+q.options.map((o,oi)=>'<button class="opt" data-oi="'+oi+'">'+String.fromCharCode(65+oi)+". "+esc(o)+"</button>").join("")+"</div>";}
  else{html+='<div class="opts">'+q.options.map((o,oi)=>'<div class="opt '+(oi===q.answer?"correct":oi===answered?"wrong":"")+'">'+String.fromCharCode(65+oi)+". "+esc(o)+(oi===q.answer?' <span class="opt-tag">✓ correct</span>':oi===answered?' <span class="opt-tag">✗ your pick</span>':"")+"</div>").join("")+'<div class="q-explain"><strong>Why:</strong> '+esc(q.explain)+"</div>";}
@@ -39,10 +51,10 @@ reg("dashboard",()=>{
  const regSeen=Object.keys(store.regionSeen).length;
  const totalQ=topics.reduce((n,t)=>n+(t.quiz||[]).length,0);
  let html=crumbs([["Dashboard"]]);
- html+='<h1 class="h1">Your brain, decoded.</h1><p class="sub">A complete interactive course built from <em>Understanding The Brain</em> (Future PLC, 100 pages): '+chs.length+" chapters, "+topics.length+" lessons, "+DATA.brainRegions.length+" brain structures, "+DATA.sims.length+" simulations and "+totalQ+" practice questions.</p>";
+ const next=topics.find(t=>!store.read[t.id]);
+ html+='<div class="hero"><div><h1 class="h1">Your brain, decoded.</h1><p class="sub">A complete interactive course built from <em>Understanding The Brain</em> (Future PLC, 100 pages): '+chs.length+" chapters, "+topics.length+" lessons, "+DATA.brainRegions.length+" brain structures, "+DATA.sims.length+" simulations and "+totalQ+" practice questions.</p>"+'<div class="meta-row"><a class="btn" href="#/'+(next?"topic/"+next.id:"library")+'">'+(next?"Continue where you left off":"Start the course")+"</a>"+'<a class="btn ghost" href="#/practice">Practice Centre</a></div></div>'+plate("neuron","hero-plate")+"</div>";
  html+='<div class="stats"><div class="stat"><div class="big-num">'+readCount+"/"+topics.length+'</div><div class="lbl">Lessons read</div></div><div class="stat"><div class="big-num">'+quizDone+'</div><div class="lbl">Quizzes taken</div></div><div class="stat"><div class="big-num">'+regSeen+"/"+DATA.brainRegions.length+'</div><div class="lbl">Regions explored</div></div><div class="stat"><div class="big-num">'+store.streak.count+'</div><div class="lbl">Day streak</div></div></div>';
  html+='<div class="grid two"><div class="card"><h3 class="h3">Start where you left off</h3>';
- const next=topics.find(t=>!store.read[t.id]);
  html+=next?'<p class="hint">Next unread lesson:</p><a class="btn" href="#/topic/'+next.id+'">'+esc(next.title)+"</a>"+pageRef(next.pages):'<p class="done-badge">✓ Every lesson read. Try the Practice Centre for chapter tests.</p><a class="btn ghost" href="#/practice">Open Practice Centre</a>';
  html+='</div><div class="card"><h3 class="h3">Jump into</h3><div class="jump-grid"><a class="chip" href="#/explorer">Brain Explorer</a><a class="chip" href="#/lab">Laboratory</a><a class="chip" href="#/flashcards">Flashcards</a><a class="chip" href="#/visuals">Visual Library</a></div></div></div>';
  html+='<h2 class="h2">The two parts of the course</h2><div class="grid two">';
@@ -50,17 +62,20 @@ reg("dashboard",()=>{
   const ps=chs.filter(c=>c.part===p[0]);
   html+='<div class="card"><h3 class="h3">'+p[0]+"</h3><p class=\"hint\">"+p[1]+'</p><p class="small gray">Book pages '+p[2]+"–"+p[3]+" · "+ps.length+" chapters</p>";
   html+=ps.map(c=>'<div class="topic-row"><a class="t-main" href="#/chapter/'+c.id+'"><span class="t-idx">Ch '+c.num+"</span>"+esc(c.title)+"</a>"+pageRef(c.pages)+"</div>").join("")+"</div>";});
- html+="</div>";h(html);});
+ html+="</div>";
+ html+='<h2 class="h2">From the archives</h2><p class="sub">The drawings that built this science, a century before imaging. The Brain Explorer maps these structures on the brain itself.</p><div class="plate-strip">'+plate("purkinje")+plate("cerebellum")+plate("gray")+"</div>";
+ html+='<p class="foot-note">Historical imagery: Santiago Ramón y Cajal, Henry Gray and others, via Wikimedia Commons (public domain and Creative Commons licences). Course content from <em>Understanding The Brain</em>, Future PLC.</p>';
+ h(html);});
 /* ---------- LIBRARY ---------- */
 reg("library",()=>{
  const chs=CH();
  let html=crumbs([["Dashboard","dashboard"],["Learning Library"]])+'<h1 class="h1">Learning Library</h1><p class="sub">All '+chs.length+' chapters of the book, each broken into short lessons. Green = every lesson read.</p><div class="chapter-grid">';
  chs.forEach(c=>{const ts=c.topics||[],done=ts.length&&ts.every(t=>store.read[t.id]);
-  html+='<div class="card chapter-card'+(done?" done":"")+'"><div class="ch-num">Chapter '+c.num+'</div><h3 class="h3"><a href="#/chapter/'+c.id+'">'+esc(c.title)+"</a></h3>"+pageRef(c.pages)+'<p class="hint">'+esc((c.intro||"").slice(0,140))+(c.intro&&c.intro.length>140?"…":"")+'</p><div class="meta-row"><span class="chip small">'+(c.part==="Biology"?"Biology":"Psychology")+'</span><span class="chip small">'+ts.length+' lessons</span>'+(done?'<span class="done-badge">✓ read</span>':"")+'</div></div>';});
+  html+='<div class="card chapter-card'+(done?" done":"")+'"><h3 class="h3"><a href="#/chapter/'+c.id+'">Chapter '+c.num+". "+esc(c.title)+"</a></h3>"+pageRef(c.pages)+'<p class="hint">'+esc((c.intro||"").slice(0,140))+(c.intro&&c.intro.length>140?"…":"")+'</p><div class="meta-row"><span class="chip small">'+(c.part==="Biology"?"Biology":"Psychology")+'</span><span class="chip small">'+ts.length+' lessons</span>'+(done?'<span class="done-badge">✓ read</span>':"")+'</div></div>';});
  h(html+"</div>");});
 reg("chapter",id=>{
  const c=chById(id);if(!c){h('<div class="empty">Chapter not found.</div>');return;}
- let html=crumbs([["Dashboard","dashboard"],["Library","library"],["Chapter "+c.num+" · "+c.title]])+'<h1 class="h1">Chapter '+c.num+". "+esc(c.title)+"</h1>"+pageRef(c.pages)+'<p class="sub">'+esc(c.intro||"")+"</p>";
+ let html=crumbs([["Dashboard","dashboard"],["Library","library"],["Chapter "+c.num+" · "+c.title]])+'<h1 class="h1">Chapter '+c.num+". "+esc(c.title)+"</h1>"+pageRef(c.pages)+'<p class="sub">'+esc(c.intro||"")+"</p>"+plate(["purkinje","brodmann","gage","cerebellum"][(c.num-1)%4],"chapter-plate");
  if(c.objectives&&c.objectives.length)html+='<div class="card"><h3 class="h3">What you will learn</h3><ul class="fact-list">'+c.objectives.map(o=>"<li>"+esc(o)+"</li>").join("")+"</ul></div>";
  html+='<h2 class="h2">Lessons in this chapter</h2>';
  (c.topics||[]).forEach((t,ti)=>{html+='<div class="card topic-card'+(store.read[t.id]?" done":"")+'"><div class="t-head"><span class="t-idx">'+(c.num)+"."+(ti+1)+"</span><h3 class=\"h3\"><a href=\"#/topic/"+t.id+'">'+esc(t.title)+"</a></h3>"+pageRef(t.pages)+"</div><p class=\"hint\">"+esc((t.intro&&t.intro.what)||"")+'</p><div class="meta-row"><span class="chip small">'+((t.quiz||[]).length)+' questions</span><span class="chip small">'+((t.flashcards||[]).length)+' flashcards</span>'+(store.read[t.id]?'<span class="done-badge">✓ read</span>':"")+"</div></div>";});
@@ -97,11 +112,11 @@ routes.topicQuiz=function(arg){const qm=arg.indexOf("/quiz");const tid=qm>0?arg.
  if(done){$("#quizInfo").innerHTML='<h3 class="h3">Best attempt: '+done.score+"/"+done.total+'</h3><a class="btn ghost" href="#/practice">Practice Centre</a>';}
  bindQuiz(z,t.quiz,t.id+".quiz",(s,n)=>{z.innerHTML='<div class="card q-result"><h3 class="h3">You scored '+s+" / "+n+"</h3><p class=\"hint\">"+(s===n?"Perfect. This lesson is locked in.":"Good work. Re-read the lesson and try again any time.")+'</p><div class="meta-row"><a class="btn" href="#/topic/'+t.id+'">Back to lesson</a><a class="btn ghost" href="#/practice">Practice Centre</a></div></div>';});};
 /* ---------- BRAIN EXPLORER ---------- */
-const BRAIN_SVG='<svg class="brain-svg" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#183c5a"/><stop offset="1" stop-color="#0e2440"/></linearGradient></defs><path d="M14,46 C10,36 16,26 28,20 C38,15 52,13 62,17 C74,20 86,26 88,36 C90,45 84,52 74,55 C70,63 60,68 50,66 C44,70 34,68 30,62 C20,60 12,54 14,46 Z" fill="url(#bg1)" stroke="#4fc3f7" stroke-width="0.8"/><path d="M28,20 C36,26 40,34 38,44 M48,14 C50,24 48,36 44,48 M62,17 C60,28 62,40 58,52 M76,24 C72,34 74,44 70,54" fill="none" stroke="#2a6f97" stroke-width="0.5"/><path d="M30,60 C34,58 40,60 44,63 M52,65 C58,63 64,60 68,58" fill="none" stroke="#2a6f97" stroke-width="0.5"/></svg>';
+const BRAIN_SVG='<svg class="brain-svg" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Outline of the human brain with marked regions"><path d="M14,46 C10,36 16,26 28,20 C38,15 52,13 62,17 C74,20 86,26 88,36 C90,45 84,52 74,55 C70,63 60,68 50,66 C44,70 34,68 30,62 C20,60 12,54 14,46 Z" fill="#dcd8ca" stroke="#1c1914" stroke-width="0.7"/><path d="M28,20 C36,26 40,34 38,44 M48,14 C50,24 48,36 44,48 M62,17 C60,28 62,40 58,52 M76,24 C72,34 74,44 70,54" fill="none" stroke="#1f5c46" stroke-width="0.55" opacity=".7"/><path d="M30,60 C34,58 40,60 44,63 M52,65 C58,63 64,60 68,58" fill="none" stroke="#1f5c46" stroke-width="0.55" opacity=".7"/></svg>';
 function brainWrap(){let w='<div class="brain-wrap">'+BRAIN_SVG;DATA.brainRegions.forEach(r=>{w+='<button class="hotspot'+(store.regionSeen[r.id]?" seen":"")+'" style="left:'+r.x+"%;top:"+r.y+'%" data-region="'+r.id+'" title="'+esc(r.name)+'"><span class="pulse-ring"></span></button>';});return w+"</div>";}
 reg("explorer",id=>{
  let html=crumbs([["Dashboard","dashboard"],["Brain Explorer"]])+'<h1 class="h1">Brain Explorer</h1><p class="sub">'+DATA.brainRegions.length+' structures of the brain. Tap a point to inspect it. Each card links back to the lessons that cover it.</p><div class="explorer-grid"><div>'+brainWrap()+'</div><div class="card region-panel" id="regionPanel">';
- if(id&&regionById(id)){html+=regionHTML(regionById(id));}else{html+='<h3 class="h3">Pick a region</h3><p class="hint">Twelve structures are marked on the map, from the wrinkled outer cortex to the fist-sized cerebellum at the back.</p><div class="tp">'+DATA.brainRegions.map(r=>'<button class="chip small" data-goto="'+r.id+'">'+esc(r.name)+"</button>").join("")+"</div>";}
+ if(id&&regionById(id)){html+=regionHTML(regionById(id));}else{html+='<h3 class="h3">Pick a region</h3><p class="hint">Twelve structures are marked on the map, from the wrinkled outer cortex to the fist-sized cerebellum at the back.</p>'+plate("gray")+'<div class="tp">'+DATA.brainRegions.map(r=>'<button class="chip small" data-goto="'+r.id+'">'+esc(r.name)+"</button>").join("")+"</div>";}
  html+="</div></div>";h(html);
  $$(".hotspot").forEach(b=>b.onclick=()=>{store.regionSeen[b.dataset.region]=Date.now();saveStore();go("#/explorer/"+b.dataset.region);});
  $$("[data-goto]").forEach(b=>b.onclick=()=>go("#/explorer/"+b.dataset.goto));});
@@ -165,7 +180,7 @@ reg("flashcards",id=>{
 function flashRunner(deck,title,backLink){
  if(!deck.length){h('<div class="empty">No cards in this deck.</div>');return;}
  let i=0,flipped=false,known=0;
- let html=crumbs([["Dashboard","dashboard"],["Flashcards","flashcards"],[title]])+'<h1 class="h1">'+esc(title)+"</h1>"+'<p class="hint">'+deck.length+' cards. Click the card to flip it, then say whether you knew it.</p><div class="flash-stage"><div class="flashcard" id="fc"><div class="flash-inner"><div class="flash-face flash-front" id="ff"></div><div class="flash-face flash-back" id="fb"></div></div></div></div><div class="flash-nav"><button class="btn ghost" id="fcPrev">◀</button><span class="hint" id="fcIdx"></span><button class="btn ghost" id="fcNext">▶</button></div><div class="meta-row" id="fcActions"><button class="btn ghost" id="fcAgain">Still learning</button><button class="btn" id="fcKnown">I knew it ✔</button></div><div class="meta-row">'+backLink+' <a class="btn ghost" href="#/flashcards">All decks</a></div>';
+ let html=crumbs([["Dashboard","dashboard"],["Flashcards","flashcards"],[title]])+'<h1 class="h1">'+esc(title)+"</h1>"+'<p class="hint">'+deck.length+' cards. Click the card to flip it, then say whether you knew it.</p><div class="flash-stage"><div class="flashcard" id="fc"><div class="flash-inner"><div class="flash-face flash-front" id="ff"></div><div class="flash-face flash-back" id="fb"></div></div></div></div><div class="flash-nav"><button class="btn ghost" id="fcPrev">Back</button><span class="hint" id="fcIdx"></span><button class="btn ghost" id="fcNext">Next</button></div><div class="meta-row" id="fcActions"><button class="btn ghost" id="fcAgain">Still learning</button><button class="btn" id="fcKnown">I knew it ✔</button></div><div class="meta-row">'+backLink+' <a class="btn ghost" href="#/flashcards">All decks</a></div>';
  h(html);
  const card=$("#fc");
  const render=()=>{flipped=false;card.classList.remove("flipped");
