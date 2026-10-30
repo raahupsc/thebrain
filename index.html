@@ -3,29 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE BRAIN - Interactive Learning Hub</title>
+<title>THE BRAIN - An Interactive Course in Neuroscience</title>
+<meta name="description" content="An interactive learning hub built from Understanding The Brain (Future PLC): 20 chapters, brain explorer, simulations, quizzes and flashcards.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="app">
   <header id="topbar">
-    <button class="icon-btn" id="menuBtn" aria-label="Open menu">☰</button>
-    <div class="brand"><span class="brand-mark">◉</span><span class="brand-name">THE BRAIN</span></div>
+    <button class="icon-btn" id="menuBtn" aria-label="Open menu">Menu</button>
+    <a class="brand" href="#/"><span class="brand-mark"></span><span class="brand-name">THE BRAIN</span></a>
     <div class="search-wrap">
       <input id="searchInput" type="search" placeholder="Search lessons, terms, structures..." aria-label="Search">
     </div>
-    <div class="streak" id="streakBox" title="Learning streak">🔥 <span id="streakCount">0</span></div>
+    <div class="streak" id="streakBox" title="Learning streak">Streak <span id="streakCount">0</span></div>
   </header>
   <nav id="sidenav" aria-label="Main navigation">
-    <div class="nav-item" data-route="dashboard"><span>🏠</span> Dashboard</div>
-    <div class="nav-item" data-route="library"><span>📚</span> Learning Library</div>
-    <div class="nav-item" data-route="explorer"><span>🧠</span> Brain Explorer</div>
-    <div class="nav-item" data-route="lab"><span>🔬</span> Laboratory</div>
-    <div class="nav-item" data-route="visuals"><span>📊</span> Visual Library</div>
-    <div class="nav-item" data-route="practice"><span>✍️</span> Practice Centre</div>
-    <div class="nav-item" data-route="flashcards"><span>🃏</span> Flashcards</div>
-    <div class="nav-item" data-route="glossary"><span>📖</span> Glossary</div>
-    <div class="nav-item" data-route="progress"><span>📈</span> My Progress</div>
+    <div class="nav-item" data-route="dashboard">Dashboard</div>
+    <div class="nav-item" data-route="library">Learning Library</div>
+    <div class="nav-item" data-route="explorer">Brain Explorer</div>
+    <div class="nav-item" data-route="lab">Laboratory</div>
+    <div class="nav-item" data-route="visuals">Visual Library</div>
+    <div class="nav-item" data-route="practice">Practice Centre</div>
+    <div class="nav-item" data-route="flashcards">Flashcards</div>
+    <div class="nav-item" data-route="glossary">Glossary</div>
+    <div class="nav-item" data-route="progress">My Progress</div>
     <div class="nav-note">Content source: <em>Understanding The Brain</em>, Future PLC (100 pp)</div>
   </nav>
   <div id="overlay"></div>

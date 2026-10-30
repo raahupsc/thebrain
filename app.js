@@ -40,11 +40,11 @@ reg("dashboard",()=>{
  const totalQ=topics.reduce((n,t)=>n+(t.quiz||[]).length,0);
  let html=crumbs([["Dashboard"]]);
  html+='<h1 class="h1">Your brain, decoded.</h1><p class="sub">A complete interactive course built from <em>Understanding The Brain</em> (Future PLC, 100 pages): '+chs.length+" chapters, "+topics.length+" lessons, "+DATA.brainRegions.length+" brain structures, "+DATA.sims.length+" simulations and "+totalQ+" practice questions.</p>";
- html+='<div class="stats"><div class="stat"><div class="big-num">'+readCount+"/"+topics.length+'</div><div class="lbl">Lessons read</div></div><div class="stat"><div class="big-num">'+quizDone+'</div><div class="lbl">Quizzes taken</div></div><div class="stat"><div class="big-num">'+regSeen+"/"+DATA.brainRegions.length+'</div><div class="lbl">Regions explored</div></div><div class="stat"><div class="big-num">🔥 '+store.streak.count+'</div><div class="lbl">Day streak</div></div></div>';
+ html+='<div class="stats"><div class="stat"><div class="big-num">'+readCount+"/"+topics.length+'</div><div class="lbl">Lessons read</div></div><div class="stat"><div class="big-num">'+quizDone+'</div><div class="lbl">Quizzes taken</div></div><div class="stat"><div class="big-num">'+regSeen+"/"+DATA.brainRegions.length+'</div><div class="lbl">Regions explored</div></div><div class="stat"><div class="big-num">'+store.streak.count+'</div><div class="lbl">Day streak</div></div></div>';
  html+='<div class="grid two"><div class="card"><h3 class="h3">Start where you left off</h3>';
  const next=topics.find(t=>!store.read[t.id]);
- html+=next?'<p class="hint">Next unread lesson:</p><a class="btn" href="#/topic/'+next.id+'">'+esc(next.title)+"</a>"+pageRef(next.pages):'<p class="done-badge">✔ Every lesson read. Try the Practice Centre for chapter tests.</p><a class="btn ghost" href="#/practice">Open Practice Centre</a>';
- html+='</div><div class="card"><h3 class="h3">Jump into</h3><div class="jump-grid"><a class="chip" href="#/explorer">🧠 Brain Explorer</a><a class="chip" href="#/lab">🔬 Laboratory</a><a class="chip" href="#/flashcards">🃏 Flashcards</a><a class="chip" href="#/visuals">📊 Visual Library</a></div></div></div>';
+ html+=next?'<p class="hint">Next unread lesson:</p><a class="btn" href="#/topic/'+next.id+'">'+esc(next.title)+"</a>"+pageRef(next.pages):'<p class="done-badge">✓ Every lesson read. Try the Practice Centre for chapter tests.</p><a class="btn ghost" href="#/practice">Open Practice Centre</a>';
+ html+='</div><div class="card"><h3 class="h3">Jump into</h3><div class="jump-grid"><a class="chip" href="#/explorer">Brain Explorer</a><a class="chip" href="#/lab">Laboratory</a><a class="chip" href="#/flashcards">Flashcards</a><a class="chip" href="#/visuals">Visual Library</a></div></div></div>';
  html+='<h2 class="h2">The two parts of the course</h2><div class="grid two">';
  [["Biology","The physical brain: neurons, senses, sleep and fear.",5,45],["Psychology","The thinking brain: emotions, lying, learning and illusions.",59,96]].forEach(p=>{
   const ps=chs.filter(c=>c.part===p[0]);
@@ -56,14 +56,14 @@ reg("library",()=>{
  const chs=CH();
  let html=crumbs([["Dashboard","dashboard"],["Learning Library"]])+'<h1 class="h1">Learning Library</h1><p class="sub">All '+chs.length+' chapters of the book, each broken into short lessons. Green = every lesson read.</p><div class="chapter-grid">';
  chs.forEach(c=>{const ts=c.topics||[],done=ts.length&&ts.every(t=>store.read[t.id]);
-  html+='<div class="card chapter-card'+(done?" done":"")+'"><div class="ch-num">Chapter '+c.num+'</div><h3 class="h3"><a href="#/chapter/'+c.id+'">'+esc(c.title)+"</a></h3>"+pageRef(c.pages)+'<p class="hint">'+esc((c.intro||"").slice(0,140))+(c.intro&&c.intro.length>140?"…":"")+'</p><div class="meta-row"><span class="chip small">'+(c.part==="Biology"?"Biology":"Psychology")+'</span><span class="chip small">'+ts.length+' lessons</span>'+(done?'<span class="done-badge">✔ read</span>':"")+'</div></div>';});
+  html+='<div class="card chapter-card'+(done?" done":"")+'"><div class="ch-num">Chapter '+c.num+'</div><h3 class="h3"><a href="#/chapter/'+c.id+'">'+esc(c.title)+"</a></h3>"+pageRef(c.pages)+'<p class="hint">'+esc((c.intro||"").slice(0,140))+(c.intro&&c.intro.length>140?"…":"")+'</p><div class="meta-row"><span class="chip small">'+(c.part==="Biology"?"Biology":"Psychology")+'</span><span class="chip small">'+ts.length+' lessons</span>'+(done?'<span class="done-badge">✓ read</span>':"")+'</div></div>';});
  h(html+"</div>");});
 reg("chapter",id=>{
  const c=chById(id);if(!c){h('<div class="empty">Chapter not found.</div>');return;}
  let html=crumbs([["Dashboard","dashboard"],["Library","library"],["Chapter "+c.num+" · "+c.title]])+'<h1 class="h1">Chapter '+c.num+". "+esc(c.title)+"</h1>"+pageRef(c.pages)+'<p class="sub">'+esc(c.intro||"")+"</p>";
  if(c.objectives&&c.objectives.length)html+='<div class="card"><h3 class="h3">What you will learn</h3><ul class="fact-list">'+c.objectives.map(o=>"<li>"+esc(o)+"</li>").join("")+"</ul></div>";
  html+='<h2 class="h2">Lessons in this chapter</h2>';
- (c.topics||[]).forEach((t,ti)=>{html+='<div class="card topic-card'+(store.read[t.id]?" done":"")+'"><div class="t-head"><span class="t-idx">'+(c.num)+"."+(ti+1)+"</span><h3 class=\"h3\"><a href=\"#/topic/"+t.id+'">'+esc(t.title)+"</a></h3>"+pageRef(t.pages)+"</div><p class=\"hint\">"+esc((t.intro&&t.intro.what)||"")+'</p><div class="meta-row"><span class="chip small">'+((t.quiz||[]).length)+' questions</span><span class="chip small">'+((t.flashcards||[]).length)+' flashcards</span>'+(store.read[t.id]?'<span class="done-badge">✔ read</span>':"")+"</div></div>";});
+ (c.topics||[]).forEach((t,ti)=>{html+='<div class="card topic-card'+(store.read[t.id]?" done":"")+'"><div class="t-head"><span class="t-idx">'+(c.num)+"."+(ti+1)+"</span><h3 class=\"h3\"><a href=\"#/topic/"+t.id+'">'+esc(t.title)+"</a></h3>"+pageRef(t.pages)+"</div><p class=\"hint\">"+esc((t.intro&&t.intro.what)||"")+'</p><div class="meta-row"><span class="chip small">'+((t.quiz||[]).length)+' questions</span><span class="chip small">'+((t.flashcards||[]).length)+' flashcards</span>'+(store.read[t.id]?'<span class="done-badge">✓ read</span>':"")+"</div></div>";});
  h(html);});
 reg("topic",id=>{
  const t=topicById(id);if(!t){h('<div class="empty">Lesson not found.</div>');return;}
@@ -81,12 +81,12 @@ reg("topic",id=>{
  if(t.connections&&t.connections.length)html+='<h2 class="h2">Connects to</h2><ul class="fact-list">'+t.connections.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>";
  if(t.takeaways&&t.takeaways.length)html+='<div class="takeaways"><h3 class="h3">Takeaways</h3><ul class="fact-list">'+t.takeaways.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>";
  if(t.glossary&&t.glossary.length)html+='<h2 class="h2">Terms in this lesson</h2><div class="tp">'+t.glossary.map(g=>'<a class="chip small" href="#/glossary">'+esc(g)+"</a>").join("")+"</div>";
- html+='<div class="lesson-foot"><button class="btn" id="markReadBtn">'+(store.read[t.id]?"✔ Already read":"Mark lesson as read")+"</button> ";
+ html+='<div class="lesson-foot"><button class="btn" id="markReadBtn">'+(store.read[t.id]?"✓ Already read":"Mark lesson as read")+"</button> ";
  if(t.quiz&&t.quiz.length)html+='<a class="btn ghost" href="#/topic/'+t.id+'/quiz">Take the quiz ('+t.quiz.length+" questions)</a>";
  html+='<a class="btn ghost" href="#/flashcards/'+t.id+'">Flashcards</a></div>';
  if(t.quiz&&t.quiz.length)html+='<div id="quizMount"></div>';
  html+="</article>";h(html);
- $("#markReadBtn").onclick=()=>{markRead(t.id);$("#markReadBtn").textContent="✔ Saved to your progress";};
+ $("#markReadBtn").onclick=()=>{markRead(t.id);$("#markReadBtn").textContent="✓ Saved to your progress";};
  const m=$("#quizMount");if(m)bindQuiz(m,t.quiz,t.id+".quiz",()=>go("#/topic/"+t.id+"/quiz?done=1"));});
 /* topic quiz sub-route */
 routes.topicQuiz=function(arg){const qm=arg.indexOf("/quiz");const tid=qm>0?arg.slice(0,qm):arg;const t=topicById(tid);if(!t){h('<div class="empty">Lesson not found.</div>');return;}
@@ -111,7 +111,7 @@ function regionHTML(r){
 /* ---------- LABORATORY ---------- */
 reg("lab",()=>{
  let html=crumbs([["Dashboard","dashboard"],["Laboratory"]])+'<h1 class="h1">Neuroscience Laboratory</h1><p class="sub">'+DATA.sims.length+" step-by-step simulations of the processes the book describes. Step through each one and watch the sequence unfold.</p><div class=\"grid three\">";
- DATA.sims.forEach(s=>{const t=simById(s.id);html+='<div class="card"><h3 class="h3">'+esc(s.title)+"</h3>"+pageRef("Ch. "+(chById(s.chapter)?chById(s.chapter).num:s.chapter))+'<p class="hint">'+esc(s.desc)+'</p><div class="meta-row">'+(store.simDone[s.id]?'<span class="done-badge">✔ completed</span>':"")+'<a class="btn small" href="#/sim/'+s.id+'">Run</a></div></div>';});
+ DATA.sims.forEach(s=>{const t=simById(s.id);html+='<div class="card"><h3 class="h3">'+esc(s.title)+"</h3>"+pageRef("Ch. "+(chById(s.chapter)?chById(s.chapter).num:s.chapter))+'<p class="hint">'+esc(s.desc)+'</p><div class="meta-row">'+(store.simDone[s.id]?'<span class="done-badge">✓ Completed</span>':"")+'<a class="btn small" href="#/sim/'+s.id+'">Run</a></div></div>';});
  h(html+"</div>");});
 reg("sim",id=>{
  const s=simById(id);if(!s){h('<div class="empty">Simulation not found.</div>');return;}
@@ -121,7 +121,7 @@ reg("sim",id=>{
  h(html);let step=0;
  const stage=$("#stage"),list=$("#stepList");
  const render=()=>{
-  let dots='<div class="sim-visual"><div class="sim-circle'+(step===0?" idle":" fired")+'">'+(step===0?"⏸":step===s.steps.length-1?"✓":"⚡")+"</div></div>";
+  let dots='<div class="sim-visual"><div class="sim-circle'+(step===0?" idle":" fired")+'">'+(step===0?"○":step===s.steps.length-1?"✓":"●")+"</div></div>";
   dots+='<div class="sim-caption"><strong>Step '+(step+1)+" of "+s.steps.length+"</strong><p>"+esc(s.steps[step])+"</p></div>";
   stage.innerHTML=dots;
   list.innerHTML=s.steps.map((st,i)=>'<div class="sim-step'+(i===step?" open":"")+(i<step?" past":"")+'"><span class="q-idx">'+(i+1)+"</span> "+esc(st)+"</div>").join("");
@@ -208,7 +208,7 @@ reg("progress",()=>{
  const read=topics.filter(t=>store.read[t.id]).length;
  const q=Object.values(store.quiz);const qAvg=q.length?Math.round(q.reduce((a,b)=>a+b.score/b.total,0)/q.length*100):0;
  let html=crumbs([["Dashboard","dashboard"],["My Progress"]])+'<h1 class="h1">My Progress</h1>';
- html+='<div class="stats"><div class="stat"><div class="big-num">'+Math.round(read/topics.length*100)+'%</div><div class="lbl">Course read</div></div><div class="stat"><div class="big-num">'+qAvg+'%</div><div class="lbl">Average quiz score</div></div><div class="stat"><div class="big-num">'+Object.keys(store.simDone).length+"/"+DATA.sims.length+'</div><div class="lbl">Simulations run</div></div><div class="stat"><div class="big-num">🔥 '+store.streak.count+'</div><div class="lbl">Day streak</div></div></div>';
+ html+='<div class="stats"><div class="stat"><div class="big-num">'+Math.round(read/topics.length*100)+'%</div><div class="lbl">Course read</div></div><div class="stat"><div class="big-num">'+qAvg+'%</div><div class="lbl">Average quiz score</div></div><div class="stat"><div class="big-num">'+Object.keys(store.simDone).length+"/"+DATA.sims.length+'</div><div class="lbl">Simulations run</div></div><div class="stat"><div class="big-num">'+store.streak.count+'</div><div class="lbl">Day streak</div></div></div>';
  html+='<div class="card"><h3 class="h3">Lessons read, chapter by chapter</h3><div class="wtable">';
  CH().forEach(c=>{const ts=c.topics||[];const d=ts.filter(t=>store.read[t.id]).length;const pct=ts.length?Math.round(d/ts.length*100):0;
   html+='<div class="wrow"><span class="wcell k">Ch '+c.num+'</span><span class="wcell g">'+esc(c.title)+'</span><span class="wcell hbar-t"><span class="hbar-f" style="width:'+pct+'%"></span></span><span class="wcell">'+d+"/"+ts.length+"</span></div>";});
@@ -258,11 +258,11 @@ function topicView(id){const t=topicById(id);if(!t){h('<div class="empty">Lesson
  if(t.connections&&t.connections.length)html+='<h2 class="h2">Connects to</h2><ul class="fact-list">'+t.connections.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>";
  if(t.takeaways&&t.takeaways.length)html+='<div class="takeaways"><h3 class="h3">Takeaways</h3><ul class="fact-list">'+t.takeaways.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>";
  if(t.glossary&&t.glossary.length)html+='<h2 class="h2">Terms in this lesson</h2><div class="tp">'+t.glossary.map(g=>'<a class="chip small" href="#/glossary">'+esc(g)+"</a>").join("")+"</div>";
- html+='<div class="lesson-foot"><button class="btn" id="markReadBtn">'+(store.read[t.id]?"✔ Already read":"Mark lesson as read")+"</button> ";
+ html+='<div class="lesson-foot"><button class="btn" id="markReadBtn">'+(store.read[t.id]?"✓ Already read":"Mark lesson as read")+"</button> ";
  if(t.quiz&&t.quiz.length)html+='<a class="btn ghost" href="#/topic/'+t.id+'/quiz">Take the quiz ('+t.quiz.length+" questions)</a>";
  html+='<a class="btn ghost" href="#/flashcards/'+t.id+'">Flashcards</a></div>';
  html+="</article>";h(html);
- $("#markReadBtn").onclick=()=>{markRead(t.id);$("#markReadBtn").textContent="✔ Saved to your progress";};}
+ $("#markReadBtn").onclick=()=>{markRead(t.id);$("#markReadBtn").textContent="✓ Saved to your progress";};}
 const listDecksOrig=routes.flashcards;routes.flashcards=function(id){return id?flashRoute(id):listDecksOrig();}
 /* remove the duplicate topic handler registered in part 1 */
 delete routes.topicQuiz;
